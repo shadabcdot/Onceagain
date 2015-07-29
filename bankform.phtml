@@ -1,1 +1,499 @@
 
+<?php
+echo "<script src=\"https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js\"></script>";
+$resource = Mage::getSingleton('core/resource');
+$readConnection = $resource->getConnection('core_read');
+?>
+
+<div class="seller_bank_flow_div">
+    <form method="post" name="formOne" id="formOne" action="<?php echo $this->getUrl(''); ?>brand/index/processData/">
+        <h1>All Fields are Mandatory</h1>
+        <ul>
+            <li>
+                <label for="payee_fullname">Payee Name:</label>
+                <input id="payee_fullname" type="text" name="payee_fullname" class="required-entry" required />
+            </li>
+            <li>
+                <label for="bank_account_number">Bank Account Number:</label>
+                <input id="bank_account_number" type="text" name="bank_account_number" class="required-entry"  required/>
+            </li>
+
+            <li><label for="bank">Bank Name:</label>
+                <select id="bank" name="bank" class="list-bank bank validate-select required-entry" required >
+                    <option value="">- Select Bank -</option>
+                    <?php
+                    $bank_name_query = "select distinct bank from bank_database order by bank asc";
+                    $result = $readConnection->query($bank_name_query);
+                    $bank_results = $result->fetchAll();
+                    foreach ($bank_results as $bank) {
+                        echo '<option value="' . $bank['bank'] . '">' . $bank['bank'] . '</option>';
+                    }
+                    ?>
+                </select>
+            </li>
+            <li><label for="state">State Name:</label>
+                <select id="state" name="state" class="list-bank state validate-select required-entry" required>
+                    <option value="">- Select State -</option>
+                </select>
+            </li>
+
+            <li><label for="district">District :</label>
+                <select id="district" name="district" class="list-bank district validate-select required-entry" required>
+                    <option value="">- Select District -</option>
+                </select>
+
+            </li>
+            <li><label for="branch">Branch :</label>
+                <select id="branch" name="branch" class="list-bank branch validate-select required-entry" required>
+                    <option value="">- Select Branch -</option>
+                </select>
+
+            </li>
+
+            <li>
+                <label for="ifsc_code">IFSC Code:</label>
+                <input type="text" name="ifsc_code" class="ifsc_code required-entry" id="ifsc_code" required >
+                <!--Added by sweta start-->
+                &nbsp; 
+                <div id="cir1" title="This code can be found on your Cheque Book, Pass Book and Bank Statement. If you do not have access to these you can find it online using - http://www.ifsccodebank.com/">
+                    <span id="ifsc_quest">?</span>
+                </div>
+                <!--Added by sweta end-->
+            </li>
+        </ul>
+        <h1>We&#39;ll Also need your address for pick up !</h1>
+        <ul>
+            <li>
+                <label for="seller_address">Full Address:</label>
+                <input id="seller_address" type="text" name="seller_address" required class="required-entry validate-street" >
+            </li>
+
+            <li>
+                <label for="seller_state">State :</label>
+
+                <select id="seller_state" name="seller_state" class="list-bank seller_state validate-select required-entry" required >
+                    <option value="">- Select State -</option>
+                    <?php
+                    $seller_state_name_query = "select distinct state from pincode_database order by state asc";
+                    $seller_state_name_result = $readConnection->fetchAll($seller_state_name_query);
+                    foreach ($seller_state_name_result as $state) {
+                        echo '<option value="' . $state['state'] . '">' . $state['state'] . '</option>';
+                    }
+                    ?>
+                </select>
+
+            </li>
+
+            <li><label for="seller_city">City :</label>
+                <select id="seller_city" name="seller_city" class="list-bank seller_city validate-select required-entry" required>                    
+                    <option value="">- Select City -</option>
+                </select>
+            </li>
+            <li>
+                <label for="seller_pin">PIN Code:</label>
+                <input id="seller_pin" type="text" name="seller_pin" class="seller_pin required-entry"  required maxlength="6">&nbsp;<span id="pin_error"></span>
+            </li>
+
+            <li>
+                <label for="seller_landmark">Landmark (Optional):</label>
+                <input id="seller_landmark" type="text" name="seller_landmark" class="seller_landmark" >
+            </li>
+
+            <li>
+                <label for="seller_phone">Phone Number:</label>
+                <input id="seller_phone" type="text" name="seller_phone" class="seller_phone required-entry validate-phoneStrict" required maxlength="10">&nbsp;<span id="phone_error"></span>
+                <button id="otp_input_btn" class="button"><span>Send OTP</span></button>
+                <span id="otp_sent_msg"></span>
+            </li>
+
+
+            <li id="otp">
+                <label for="otp_input">Enter The OTP:</label>
+                <input id="otp_input" type="text" name="otp_input" maxlength="6">&nbsp;<span id="otp_error"></span>
+                <button id="otp_verify_btn" class="button"><span>Verify OTP</span></button>
+                <span id="otp_verify_msg"></span>
+            </li>
+
+            <!--Div added by sweta start-->
+            <div id="div_note">
+                Please double check the information you have entered.<br> 
+                Once this is submitted, all payments will be made to this Bank Account.<br>
+                We are not liable for the transfer of funds to the wrong account<br> 
+                if the information provided by you is incorrect.
+            </div>
+            <span id="error_message"></span>
+            <div class="tnc">
+
+                <div id="tnc-con">
+                    <?php
+                    $cmsPage = Mage::getModel('cms/page')->load('terms-and-conditions', 'identifier');
+                    echo $cmsPage->getContent();
+                    ?>
+                </div>
+                <input type="checkbox" id="popup_check" name="tnc" value="tncc" required ><h2>I Agree To The Terms & Conditions.</h2>
+            </div>
+        </ul>
+        <h2>This form is submitted sucessfully when the 'What Happens Next' Page appears</h2>
+        <!--Div added by sweta end-->
+        <button class="button" title="Subscribe" type="submit"><span><span id="final_submit_btn">Update</span></span></button>
+        <input type="hidden" name="idid" value="0" >
+    </form>
+    <a href="<?php echo $this->getUrl('what-happens-next'); ?>" id="what_a_anchor" class="button" ><span id="what_a_span">This is fine, Submit</span></a>
+</div>
+
+</div> <!-- end of seller_bank_flow_div -->
+<div class="modal"><!-- Place at bottom of page -->
+    <span>Loading...</span>
+</div>
+
+
+
+
+<script type="text/javascript">
+    //Function to show Popup
+    function div_show() {
+        document.getElementById('tnc-content').style.display = "block";
+    }
+
+    //Function to Hide Popup
+    function div_hide() {
+        document.getElementById('tnc-content').style.display = "none";
+    }
+</script>
+
+
+<?php // Shadab Mehdi, Bank Form JS Starts Here ?>
+
+<script type="text/javascript">
+    $.noConflict();
+    jQuery(document).ready(function () {
+        // Display Loading Animation
+        $body = jQuery("body");
+        jQuery(document).on({
+            ajaxStart: function () {
+                $body.addClass("loading");
+            },
+            ajaxStop: function () {
+                $body.removeClass("loading");
+            }
+        });
+
+        jQuery("#seller_pin").keypress(function (e) {
+            if (e.which !== 8 && e.which !== 0 && (e.which < 48 || e.which > 57)) {
+                jQuery("#pin_error").html("Please enter digits only.").show().fadeOut("slow").css({'color': 'red'});
+                return false;
+            }
+        });
+
+        jQuery("#seller_phone").keypress(function (e) {
+            if (e.which !== 8 && e.which !== 0 && (e.which < 48 || e.which > 57)) {
+                jQuery("#phone_error").html("Please enter digits only.").show().fadeOut("slow").css({'color': 'red'});
+                return false;
+            }
+        });
+        jQuery("#otp_input").keypress(function (e) {
+            if (e.which !== 8 && e.which !== 0 && (e.which < 48 || e.which > 57)) {
+                jQuery("#otp_error").html("Please enter digits only.").show().fadeOut("slow").css({'color': 'red'});
+                return false;
+            }
+        });
+
+
+        jQuery("#otp").hide();
+        jQuery("#otp_input_btn").click(function (e) {
+
+            jQuery("#otp").show();
+            jQuery("#otp_input_btn").html('<span>Resend OTP</span>')
+            jQuery("#otp_verify_btn").show();
+            // Send OTP Here
+            var urlAddress = "<?php echo $this->getUrl(''); ?>brand/index/generateOTP/";
+            var ph = jQuery("#seller_phone").val();
+            var fn = jQuery("#payee_fullname").val();
+            var dataString = "ph=" + ph + "&fn=" + fn;
+            jQuery.ajax({
+                url: urlAddress,
+                cache: false,
+                type: 'POST',
+                dataType: 'html',
+                data: dataString,
+                success: function (data) {
+                    if (!isNaN(data)) {
+                        jQuery("#otp_sent_msg").html("OTP Sent Successfully.");
+                        jQuery("#otp_verify_btn").removeAttr('disabled');
+                    }
+                    else {
+                        jQuery("#otp_sent_msg").html("Error while sending OTP, please Re-Send.");
+                    }
+                }
+            });
+        });
+
+        jQuery("#otp_verify_btn").click(function (e) {
+
+            var otp_len = jQuery("#otp_input").val() + "";
+            if (otp_len.length >= 0 && otp_len.length <= 5) {
+                jQuery("#otp_error").html("Please enter 6 digits.").show().fadeOut("slow").css({'color': 'red'});
+            } else if (otp_len.length === 6) {
+                // Verify OTP Here
+                var otp = jQuery("#otp_input").val();
+                var urlAddress = "<?php echo $this->getUrl(''); ?>brand/index/verifyOTP/";
+                var ph = jQuery("#seller_phone").val();
+                var dataString = "ph=" + ph + "&otp=" + otp;
+                jQuery.ajax({
+                    url: urlAddress,
+                    cache: false,
+                    type: 'POST',
+                    dataType: 'html',
+                    data: dataString,
+                    success: function (data) {
+                        if (data === '1') {
+                            // OTP is Correct, verify
+                            jQuery("#otp_verify_msg").html("OTP Verified Successfully.").css({'color': 'green'});
+                            jQuery("#otp_verify_btn").attr('disabled', 'disabled');
+                        } else {
+                            // Incorrect OTP, re-verify
+                            jQuery("#otp_verify_msg").html("Unable to verify your OTP, Please retry.").css({'color': 'red'});
+                        }
+                    }
+                });
+            }
+        });
+
+
+
+        // To Fetch Stored Values
+        // var dataString = 'id=' + <?php // echo $customerData->getEntityId();    ?>;
+        var dataString = '';
+        var urlAddress = "<?php echo $this->getUrl(''); ?>brand/index/getStoredBankValues/";
+        var sh = jQuery.ajax({
+            url: urlAddress,
+            cache: false,
+            method: 'post',
+            data: dataString,
+            dataType: 'html',
+            success: function (result_data) {
+                if (result_data === '1') {
+                    // Fresh Form
+                    jQuery("#final_submit_btn").html("<span>Save</span>");
+                    jQuery("#whatHappens").hide();
+                    jQuery("#what_a_anchor, #what_a_span").hide();
+                    sh.abort();
+                } else {
+                    // Already Existing Form
+                    jQuery("#otp, #otp_input_btn, #otp_sent_msg").hide();
+                    var obj = jQuery.parseJSON(result_data);
+                    jQuery("#payee_fullname").val(obj[0].fullname);
+                    jQuery("#bank_account_number").val(obj[0].bank_account_number);
+
+                    var addBank = '<option value = "' + obj[0].bank + '" selected>' + obj[0].bank + '</option>';
+                    jQuery("#bank").append(addBank);
+
+                    var addState = '<option value = "' + obj[0].state + '" selected>' + obj[0].state + '</option>';
+                    jQuery("#state").append(addState);
+
+                    var addDistrict = '<option value = "' + obj[0].district + '" selected>' + obj[0].district + '</option>';
+                    jQuery("#district").append(addDistrict);
+
+                    var addBranch = '<option value = "' + obj[0].branch + '" selected>' + obj[0].branch + '</option>';
+                    jQuery("#branch").append(addBranch);
+
+                    jQuery("#ifsc_code").val(obj[0].ifsc_code);
+                    jQuery("#seller_address").val(obj[0].seller_address);
+
+                    var addSellerState = '<option value = "' + obj[0].seller_state + '" selected>' + obj[0].seller_state + '</option>';
+                    jQuery("#seller_state").append(addSellerState);
+
+                    var addSellerCity = '<option value = "' + obj[0].seller_city + '" selected>' + obj[0].seller_city + '</option>';
+                    jQuery("#seller_city").append(addSellerCity);
+
+                    jQuery("#seller_pin").val(obj[0].seller_pin);
+                    jQuery("#seller_landmark").val(obj[0].seller_landmark);
+                    jQuery("#seller_phone").val(obj[0].seller_phone);
+                    jQuery("input[name=idid]").val(obj[0].id);
+                }
+            }
+        });
+
+
+
+        // To Trigger Bank Change
+        jQuery("#bank").change(function () {
+            // Reset all other Items
+            // jQuery("#state").text('<option selected="selected">- Select State -</option>');
+            // jQuery("#district").text('<option selected="selected">- Select District -</option>');
+            // jQuery("#branch").text('<option selected="selected">- Select Branch -</option>');
+
+            jQuery("#state option:gt(0)").remove();
+            jQuery("#district option:gt(0)").remove();
+            jQuery("#branch option:gt(0)").remove();
+
+            var selected_bank = jQuery(this).val();
+            var dataString = 'bank=' + selected_bank;
+            var urlAddress = "<?php echo $this->getUrl(''); ?>brand/index/getState/";
+            jQuery.ajax({
+                url: urlAddress,
+                cache: false,
+                method: 'post',
+                data: dataString,
+                dataType: 'html',
+                success: function (result_data) {
+                    jQuery("#state").html(result_data);
+                }
+            });
+        });
+
+        // To Trigger State Change
+        jQuery("#state").change(function () {
+            // Reset all other Items
+            //jQuery("#district").text('<option selected="selected">- Select District -</option>');
+            //jQuery("#branch").text('<option selected="selected">- Select Branch -</option>');
+            jQuery("#district option:gt(0)").remove();
+            jQuery("#branch option:gt(0)").remove();
+
+            var selected_state = jQuery(this).val();
+            var selected_bank = jQuery("#bank").val();
+            var dataString = 'bank=' + selected_bank + '&state=' + selected_state;
+            var urlAddress = "<?php echo $this->getUrl(''); ?>brand/index/getDistrict/";
+            jQuery.ajax({
+                url: urlAddress,
+                cache: false,
+                method: 'post',
+                data: dataString,
+                dataType: 'html',
+                success: function (result_data) {
+                    jQuery("#district").html(result_data);
+                }
+            });
+        });
+
+        // To Trigger District Change
+        jQuery("#district").change(function () {
+            // Reset all other Items
+            // jQuery("#branch").text('<option selected="selected">- Select Branch -</option>');
+            jQuery("#branch option:gt(0)").remove();
+            var selected_district = jQuery(this).val();
+            var selected_state = jQuery("#state").val();
+            var selected_bank = jQuery("#bank").val();
+
+            var dataString = 'bank=' + selected_bank + '&state=' + selected_state + '&district=' + selected_district;
+            var urlAddress = "<?php echo $this->getUrl(''); ?>brand/index/getBranch/";
+            jQuery.ajax({
+                url: urlAddress,
+                cache: false,
+                method: 'post',
+                data: dataString,
+                dataType: 'html',
+                success: function (result_data) {
+                    jQuery("#branch").html(result_data);
+                }
+            });
+        });
+
+
+
+        // To Trigger Seller State Change
+        jQuery("#seller_state").change(function () {
+
+            // On Change reset the dependent items,  
+            jQuery("#seller_city").html('<option selected="selected">- Select City -</option>');
+            jQuery("#seller_default_city").html('<option selected="selected">- Select Town / Area -</option>');
+            jQuery("#seller_pin").val('');
+
+            var seller_state = jQuery(this).val();
+            var dataString = 'seller_state=' + seller_state;
+            var urlAddress = "<?php echo $this->getUrl(''); ?>brand/index/getCity/";
+            jQuery.ajax({
+                url: urlAddress,
+                cache: false,
+                type: 'POST',
+                data: dataString,
+                dataType: 'html',
+                success: function (result_data) {
+                    jQuery("#seller_city").html(result_data);
+                }
+            });
+        });
+        // To Trigger Seller City Change
+        jQuery("#seller_city").change(function () {
+
+            // On Change reset the dependent items,  
+            jQuery("#seller_default_city").html('<option selected="selected">- Select Town / Area -</option>');
+            jQuery("#seller_pin").val('');
+
+            var seller_city = jQuery(this).val();
+            var seller_state = jQuery("#seller_state").val();
+            var dataString = 'seller_city=' + seller_city + '&seller_state=' + seller_state;
+            var urlAddress = "<?php echo $this->getUrl(''); ?>brand/index/getTownArea/";
+            jQuery.ajax({
+                url: urlAddress,
+                cache: false,
+                type: 'POST',
+                data: dataString,
+                dataType: 'html',
+                success: function (result_data) {
+                    jQuery("#seller_default_city").html(result_data);
+                }
+            });
+        });
+
+
+        // Get Final Pin Code
+        jQuery("#seller_default_city").change(function () {
+            // On Change reset the dependent items,  
+            jQuery("#seller_pin").val('');
+
+
+            var val = jQuery(this).val();
+            var split = val.split(",");
+            var v1 = split[0];
+            var v2 = split[1];
+
+            var dataString = 'pin=' + v1 + '&df=' + v2;
+            var urlAddress = "<?php echo $this->getUrl(''); ?>brand/index/getPINCode/";
+            jQuery.ajax({
+                url: urlAddress,
+                cache: false,
+                type: 'POST',
+                data: dataString,
+                dataType: 'html',
+                success: function (result_data) {
+                    jQuery("#seller_pin").val('' + result_data);
+                }
+            });
+        });
+    });
+</script>
+<?php // Shadab Mehdi, Bank Form JS Ends Here ?>
+
+<style type="text/css">
+    /* Start by setting display:none to make this hidden.
+    Then we position it in relation to the viewport window
+    with position:fixed. Width, height, top and left speak
+    for themselves. Background we set to 80% white with
+    our animation centered, and no-repeating */
+    .modal {
+        display:    none;
+        position:   fixed;
+        z-index:    1000;
+        top:        0;
+        left:       0;
+        height:     100%;
+        width:      100%;
+        background: rgba( 255, 255, 255, .8 ) 
+            url('http://i.stack.imgur.com/FhHRx.gif') 
+            50% 50% 
+            no-repeat;
+    }
+
+    /* When the body has the loading class, we turn
+       the scrollbar off with overflow:hidden */
+    body.loading {
+        overflow: hidden;   
+    }
+
+    /* Anytime the body has the loading class, our
+       modal element will be visible */
+    body.loading .modal {
+        display: block;
+    }
+</style>
